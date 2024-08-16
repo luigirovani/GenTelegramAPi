@@ -1,4 +1,3 @@
-﻿from email import header
 import os
 import asyncio
 import httpx
@@ -12,7 +11,7 @@ from telethon.types import UpdateNewMessage
 from telethon.events import NewMessage
 
 TIMEOUT_CODE = 120
-DELAY = 30
+DELAY = 60
 
 if not os.getenv('API_ID') or not os.getenv('API_HASH'):
     raise ValueError('API_ID or API_HASH variable empty')
