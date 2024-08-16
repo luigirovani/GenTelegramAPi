@@ -1,0 +1,1 @@
+put your telethon sessions in this foulder
