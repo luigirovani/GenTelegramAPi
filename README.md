@@ -10,7 +10,7 @@
 Your credentials will be written to the apis.csv file and the apis folder.
 
 ```bash
-git clone https://github.com/GenTelegramAPi/.git
+git clone https://github.com/luigirovani/GenTelegramAPi
 cd GenTelegramAPi
 pip install -r requirements.txt
 set API_ID=12345
