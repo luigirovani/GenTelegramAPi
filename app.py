@@ -12,6 +12,8 @@ from telethon.events import NewMessage
 
 TIMEOUT_CODE = 120
 DELAY = 60
+PROXY = None
+local_file = f'apis/{datetime.now().strftime("%d_%m_%Y_%H_%M")}.csv'
 
 if not os.getenv('API_ID') or not os.getenv('API_HASH'):
     raise ValueError('API_ID or API_HASH variable empty')
@@ -20,25 +22,24 @@ async def sleep():
     await asyncio.sleep(random.uniform(0.5, 3))
 
 def write_apis(api_id, api_hash):
-    local_file = f'apis/{datetime.now().strftime("%d_%m_%Y_%H_%M")}.csv'
     geral_file = 'apis.csv'
 
     if os.path.exists('apis'):
         os.makedirs('apis')
 
     if not os.path.exists(local_file):
-        with open (local_file, 'w') as f:
+        with open (local_file, 'w', newline='') as f:
             f.write('api_id,api_hash\n')
 
     if not os.path.exists(geral_file):
-        with open (geral_file, 'w') as f:
+        with open (geral_file, 'w', newline='') as f:
             f.write('api_id,api_hash\n')
 
-    with open (local_file, 'a') as f:
+    with open (local_file, 'a', newline='') as f:
         csv_writer = csv.writer(f, delimiter=',')
         csv_writer.writerow([api_id, api_hash])
 
-    with open (geral_file, 'a') as f:
+    with open (geral_file, 'a', newline='') as f:
         csv_writer = csv.writer(f, delimiter=',')
         csv_writer.writerow([api_id, api_hash])
 
@@ -202,7 +203,7 @@ async def create_new_tg_app(session, tg_app_hash, app_title, app_shortname, app_
 
 async def create_api(phone, receiver):
 
-    async with httpx.AsyncClient() as session:
+    async with httpx.AsyncClient(proxy=PROXY) as session:
         random_hash = await request_tg_code_get_random_hash(session, phone)
         if random_hash:
             provided_code = await receiver.get_code()
@@ -211,6 +212,7 @@ async def create_api(phone, receiver):
                 cookie = await login_step_get_stel_cookie(session, phone, random_hash, provided_code)
                 if cookie:
                     status, response = await scarp_tg_existing_app(session, cookie)
+
                     if not status:
                         await create_new_tg_app(
                             session,
@@ -222,8 +224,8 @@ async def create_api(phone, receiver):
                             ""
                         )
                         await sleep()
+                        status, response = await scarp_tg_existing_app(session, cookie)
 
-                    status, response = await scarp_tg_existing_app(session, cookie)
                     if status:
                         api_id = response["App Configuration"]["app_id"]
                         api_hash = response["App Configuration"]["api_hash"]
@@ -253,7 +255,6 @@ async def main():
 
         except Exception as e:
             print(f'Error in api create for {phone}: {e}')
-            raise e
 
         print(f'Waiting {DELAY}s seconds...')
         await asyncio.sleep(DELAY)
